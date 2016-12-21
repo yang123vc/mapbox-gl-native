@@ -8,6 +8,8 @@ import android.text.TextUtils;
 
 import com.mapbox.mapboxsdk.constants.MapboxConstants;
 import com.mapbox.mapboxsdk.exceptions.InvalidAccessTokenException;
+import com.mapbox.mapboxsdk.location.DefaultLocationSource;
+import com.mapbox.mapboxsdk.maps.LocationSource;
 import com.mapbox.mapboxsdk.net.ConnectivityReceiver;
 import com.mapbox.mapboxsdk.telemetry.MapboxEventManager;
 
@@ -17,6 +19,8 @@ public final class Mapbox {
   private Context context;
   private String accessToken;
   private Boolean connected;
+  private LocationSource activeLocationSource;
+  private DefaultLocationSource defaultLocationSource;
 
   public static synchronized Mapbox getInstance(@NonNull Context context, @NonNull String accessToken) {
     if (INSTANCE == null) {
@@ -90,5 +94,17 @@ public final class Mapbox {
     ConnectivityManager cm = (ConnectivityManager) INSTANCE.context.getSystemService(Context.CONNECTIVITY_SERVICE);
     NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
     return (activeNetwork != null && activeNetwork.isConnected());
+  }
+
+  public static DefaultLocationSource getDefaultLocationSource(){
+    return INSTANCE.defaultLocationSource;
+  }
+
+  static void setLocationSource(LocationSource locationSource){
+    INSTANCE.activeLocationSource = locationSource;
+  }
+
+  public static LocationSource getLocationSource(){
+    return INSTANCE.defaultLocationSource;
   }
 }

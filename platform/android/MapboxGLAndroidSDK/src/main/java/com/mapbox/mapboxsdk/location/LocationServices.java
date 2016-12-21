@@ -186,22 +186,6 @@ public class LocationServices implements LostApiClient.ConnectionCallbacks,
     return this.locationListeners.remove(locationListener);
   }
 
-  /**
-   * Check status of Location Permissions
-   *
-   * @return True if granted to the app, False if not
-   */
-  public boolean areLocationPermissionsGranted() {
-    if ((ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
-      != PackageManager.PERMISSION_GRANTED)
-      && (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-      != PackageManager.PERMISSION_GRANTED)) {
-      Timber.w("Location Permissions Not Granted Yet.  Try again after requesting.");
-      return false;
-    }
-    return true;
-  }
-
   @Override
   public void onProviderDisabled(String provider) {
   }

@@ -31,12 +31,8 @@ import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.constants.MyBearingTracking;
 import com.mapbox.mapboxsdk.constants.MyLocationTracking;
 import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.location.LocationListener;
-import com.mapbox.mapboxsdk.location.LocationServices;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.Projection;
-
-import java.lang.ref.WeakReference;
 
 /**
  * UI element overlaid on a map to show the user's location.
@@ -104,7 +100,6 @@ public class MyLocationView extends View {
   @MyBearingTracking.Mode
   private int myBearingTrackingMode;
 
-  private GpsLocationListener userLocationListener;
   private CompassListener compassListener;
 
   public MyLocationView(Context context) {
@@ -334,16 +329,12 @@ public class MyLocationView extends View {
 
   public void onStart() {
     if (myBearingTrackingMode == MyBearingTracking.COMPASS) {
-      compassListener.onResume();
-    }
-    if (isEnabled()) {
-      toggleGps(true);
+      compassListener.onStart();
     }
   }
 
   public void onStop() {
-    compassListener.onPause();
-    toggleGps(false);
+    compassListener.onStop();
   }
 
   @Override
@@ -363,12 +354,6 @@ public class MyLocationView extends View {
     if (directionAnimator != null) {
       directionAnimator.cancel();
       directionAnimator = null;
-    }
-
-    if (userLocationListener != null) {
-      LocationServices services = LocationServices.getLocationServices(getContext());
-      services.removeLocationListener(userLocationListener);
-      userLocationListener = null;
     }
   }
 
@@ -390,7 +375,6 @@ public class MyLocationView extends View {
   public void setEnabled(boolean enabled) {
     super.setEnabled(enabled);
     setVisibility(enabled ? View.VISIBLE : View.INVISIBLE);
-    toggleGps(enabled);
   }
 
   @Override
@@ -411,39 +395,6 @@ public class MyLocationView extends View {
     super.onRestoreInstanceState(state);
   }
 
-  /**
-   * Enabled / Disable GPS location updates along with updating the UI
-   *
-   * @param enableGps true if GPS is to be enabled, false if GPS is to be disabled
-   */
-  private void toggleGps(boolean enableGps) {
-    LocationServices locationServices = LocationServices.getLocationServices(getContext());
-    if (enableGps) {
-      // Set an initial location if one available
-      Location lastLocation = locationServices.getLastLocation();
-
-      if (lastLocation != null) {
-        setLocation(lastLocation);
-      }
-
-      if (userLocationListener == null) {
-        userLocationListener = new GpsLocationListener(this);
-      }
-
-      locationServices.addLocationListener(userLocationListener);
-    } else {
-      // Disable location and user dot
-      location = null;
-      locationServices.removeLocationListener(userLocationListener);
-    }
-
-    locationServices.toggleGPS(enableGps);
-  }
-
-  public Location getLocation() {
-    return location;
-  }
-
   public void setLocation(Location location) {
     if (location == null) {
       this.location = null;
@@ -457,9 +408,9 @@ public class MyLocationView extends View {
   public void setMyBearingTrackingMode(@MyBearingTracking.Mode int myBearingTrackingMode) {
     this.myBearingTrackingMode = myBearingTrackingMode;
     if (myBearingTrackingMode == MyBearingTracking.COMPASS) {
-      compassListener.onResume();
+      compassListener.onStart();
     } else {
-      compassListener.onPause();
+      compassListener.onStop();
       if (myLocationTrackingMode == MyLocationTracking.TRACKING_FOLLOW) {
         // always face north
         setCompass(0);
@@ -541,28 +492,6 @@ public class MyLocationView extends View {
     contentPaddingY = (padding[1] - padding[3]) / 2;
   }
 
-  private static class GpsLocationListener implements LocationListener {
-
-    private WeakReference<MyLocationView> userLocationView;
-
-    GpsLocationListener(MyLocationView myLocationView) {
-      userLocationView = new WeakReference<>(myLocationView);
-    }
-
-    /**
-     * Callback method for receiving location updates from LocationServices.
-     *
-     * @param location The new Location data
-     */
-    @Override
-    public void onLocationChanged(Location location) {
-      MyLocationView locationView = userLocationView.get();
-      if (locationView != null) {
-        locationView.setLocation(location);
-      }
-    }
-  }
-
   private class CompassListener implements SensorEventListener {
 
     private final SensorManager sensorManager;
@@ -579,11 +508,11 @@ public class MyLocationView extends View {
       rotationVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
     }
 
-    public void onResume() {
+    public void onStart() {
       sensorManager.registerListener(this, rotationVectorSensor, SensorManager.SENSOR_DELAY_GAME);
     }
 
-    public void onPause() {
+    public void onStop() {
       sensorManager.unregisterListener(this, rotationVectorSensor);
     }
 

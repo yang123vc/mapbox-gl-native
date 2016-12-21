@@ -1472,6 +1472,25 @@ public final class MapboxMap {
   }
 
   //
+  // LocationSource
+  //
+
+  /**
+   * Replaces the default LocationSource with an user provided one.
+   * <p>
+   * By using your own implementation you granularly control over the location updates that the SDK receives.
+   * </p>
+   *
+   * @param locationSource custom location source that provides location updates
+   * @see LocationSource
+   */
+  @UiThread
+  public void setLocationSource(LocationSource locationSource) {
+    // FIXME add integration
+  }
+
+
+  //
   // User location
   //
 

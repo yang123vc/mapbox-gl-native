@@ -1,9 +1,11 @@
 package com.mapbox.mapboxsdk.maps;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.PointF;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -14,21 +16,23 @@ import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.constants.MapboxConstants;
 import com.mapbox.mapboxsdk.constants.MyBearingTracking;
 import com.mapbox.mapboxsdk.constants.MyLocationTracking;
+import com.mapbox.mapboxsdk.location.DefaultLocationSource;
 import com.mapbox.mapboxsdk.location.LocationListener;
-import com.mapbox.mapboxsdk.location.LocationServices;
 import com.mapbox.mapboxsdk.maps.widgets.MyLocationView;
+import com.mapbox.mapboxsdk.telemetry.TelemetryLocationReceiver;
 
 import timber.log.Timber;
 
 /**
  * Settings for the user location and bearing tracking of a MapboxMap.
  */
-public final class TrackingSettings {
+public final class TrackingSettings implements LocationSource.OnLocationChangedListener {
 
   private final MyLocationView myLocationView;
   private final UiSettings uiSettings;
   private final FocalPointChangeListener focalPointChangedListener;
-  private LocationListener myLocationListener;
+  private LocationSource locationSource;
+  private MapboxMap.OnMyLocationChangeListener myLocationChangeListener;
 
   private boolean myLocationEnabled;
   private boolean dismissLocationTrackingOnGesture = true;
@@ -39,6 +43,7 @@ public final class TrackingSettings {
 
   TrackingSettings(@NonNull MyLocationView myLocationView, UiSettings uiSettings,
                    FocalPointChangeListener focalPointChangedListener) {
+    this.locationSource = new DefaultLocationSource();
     this.myLocationView = myLocationView;
     this.focalPointChangedListener = focalPointChangedListener;
     this.uiSettings = uiSettings;
@@ -273,6 +278,10 @@ public final class TrackingSettings {
       || myLocationView.getMyLocationTrackingMode() == MyLocationTracking.TRACKING_NONE);
   }
 
+  //
+  // Internal API
+  //
+
   /**
    * Reset the tracking modes as necessary. Location tracking is reset if the map center is changed,
    * bearing tracking if there is a rotation.
@@ -301,20 +310,7 @@ public final class TrackingSettings {
   }
 
   void setOnMyLocationChangeListener(@Nullable final MapboxMap.OnMyLocationChangeListener listener) {
-    if (listener != null) {
-      myLocationListener = new LocationListener() {
-        @Override
-        public void onLocationChanged(Location location) {
-          if (listener != null) {
-            listener.onMyLocationChange(location);
-          }
-        }
-      };
-      LocationServices.getLocationServices(myLocationView.getContext()).addLocationListener(myLocationListener);
-    } else {
-      LocationServices.getLocationServices(myLocationView.getContext()).removeLocationListener(myLocationListener);
-      myLocationListener = null;
-    }
+    this.myLocationChangeListener = listener;
   }
 
   boolean isPermissionsAccepted() {
@@ -336,7 +332,6 @@ public final class TrackingSettings {
     return myLocationView;
   }
 
-
   boolean isMyLocationEnabled() {
     return myLocationEnabled;
   }
@@ -350,6 +345,55 @@ public final class TrackingSettings {
     myLocationEnabled = locationEnabled;
     myLocationView.setEnabled(locationEnabled);
   }
+
+  //
+  // LocationSource
+  //
+
+  void setLocationSource(@Nullable LocationSource locationSource) {
+    // cleanup previous source if active
+    if (this.locationSource != null) {
+      this.locationSource.deactivate(this);
+    }
+
+    if (locationSource == null) {
+      // we need restore the default location source
+      locationSource = new DefaultLocationSource(myLocationView.getContext());
+    }
+
+    this.locationSource = locationSource;
+    if (myLocationEnabled) {
+      // enable is location is enabled
+      locationSource.activate(this);
+    }
+  }
+
+  /**
+   * Called when the location changes.
+   * <p>
+   * Entry point to the SDK to distribute updates to locational components
+   * </p>
+   * @param location the new location
+   */
+  @Override
+  public void onLocationChanged(Location location) {
+    // Update LocationView
+    myLocationView.setLocation(location);
+
+    // Update user provided listener
+    if (myLocationChangeListener != null) {
+      myLocationChangeListener.onMyLocationChange(location);
+    }
+
+    // Update the Telemetry Receiver
+    Intent locIntent = new Intent(TelemetryLocationReceiver.INTENT_STRING);
+    locIntent.putExtra(LocationManager.KEY_LOCATION_CHANGED, location);
+    myLocationView.getContext().sendBroadcast(locIntent);
+  }
+
+  //
+  // Lifecycle methods
+  //
 
   void update() {
     if (!myLocationView.isEnabled()) {

@@ -28,6 +28,7 @@ import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.constants.GeoConstants;
 import com.mapbox.mapboxsdk.constants.MapboxConstants;
 import com.mapbox.mapboxsdk.exceptions.TelemetryServiceNotConfiguredException;
+import com.mapbox.mapboxsdk.location.LocationPermissionUtils;
 import com.mapbox.mapboxsdk.location.LocationServices;
 import com.mapbox.mapboxsdk.utils.MathUtils;
 
@@ -98,6 +99,8 @@ public class MapboxEventManager {
   private static final double locationEventAccuracy = 10000000;
 
   private Timer timer = null;
+
+  private final ExponentialBackoffCounter exponentialBackoffCounter = new ExponentialBackoffCounter();
 
   /**
    * Private Constructor for configuring the single instance per app.
@@ -257,8 +260,11 @@ public class MapboxEventManager {
       // Start It Up
       context.startService(new Intent(context, TelemetryService.class));
 
+      // enable locationSource
+      // Mapbox.getLocationSource().
+
       // Make sure Ambient Mode is started at a minimum
-      if (LocationServices.getLocationServices(context).areLocationPermissionsGranted()) {
+      if (LocationPermissionUtils.areLocationPermissionsGranted(context)) {
         Timber.i("Permissions are good, see if GPS is enabled and if not then setup Ambient.");
         if (LocationServices.getLocationServices(context).isGpsEnabled()) {
           LocationServices.getLocationServices(context).toggleGPS(false);
@@ -271,7 +277,7 @@ public class MapboxEventManager {
         Runnable runnable = new Runnable() {
           @Override
           public void run() {
-            if (LocationServices.getLocationServices(context).areLocationPermissionsGranted()) {
+            if (LocationPermissionUtils.areLocationPermissionsGranted(context)) {
               Timber.i("Permissions finally granted, so starting Ambient if GPS isn't already enabled");
               // Start Ambient
               if (LocationServices.getLocationServices(context).isGpsEnabled()) {
@@ -280,7 +286,7 @@ public class MapboxEventManager {
             } else {
               // Restart Handler
               Timber.i("Permissions not granted yet... let's try again in 30 seconds");
-              permsHandler.postDelayed(this, 1000 * 30);
+              permsHandler.postDelayed(this, exponentialBackoffCounter.getNextCount());
             }
           }
         };
@@ -787,7 +793,6 @@ public class MapboxEventManager {
 
   }
 
-
   /**
    * TimerTask responsible for sending event data to server
    */
@@ -809,6 +814,17 @@ public class MapboxEventManager {
         packageInfo.versionName, packageInfo.versionCode);
     } catch (Exception exception) {
       return "";
+    }
+  }
+
+  private static class ExponentialBackoffCounter {
+
+    private static final double BASE_OFFSET_TIME = 30000 /*30 seconds*/;
+    private double attempt;
+
+    long getNextCount() {
+      attempt++;
+      return (long) Math.pow(attempt * BASE_OFFSET_TIME, 2.0);
     }
   }
 }
