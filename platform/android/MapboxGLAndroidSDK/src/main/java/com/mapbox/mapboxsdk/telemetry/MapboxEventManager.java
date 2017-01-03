@@ -1,5 +1,6 @@
 package com.mapbox.mapboxsdk.telemetry;
 
+import android.Manifest;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
@@ -18,6 +19,7 @@ import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
@@ -264,7 +266,7 @@ public class MapboxEventManager {
       // Mapbox.getLocationSource().
 
       // Make sure Ambient Mode is started at a minimum
-      if (LocationPermissionUtils.areLocationPermissionsGranted(context)) {
+      if (areLocationPermissionsGranted()) {
         Timber.i("Permissions are good, see if GPS is enabled and if not then setup Ambient.");
         if (LocationServices.getLocationServices(context).isGpsEnabled()) {
           LocationServices.getLocationServices(context).toggleGPS(false);
@@ -277,7 +279,7 @@ public class MapboxEventManager {
         Runnable runnable = new Runnable() {
           @Override
           public void run() {
-            if (LocationPermissionUtils.areLocationPermissionsGranted(context)) {
+            if (areLocationPermissionsGranted()) {
               Timber.i("Permissions finally granted, so starting Ambient if GPS isn't already enabled");
               // Start Ambient
               if (LocationServices.getLocationServices(context).isGpsEnabled()) {
@@ -815,6 +817,22 @@ public class MapboxEventManager {
     } catch (Exception exception) {
       return "";
     }
+  }
+
+  /**
+   * Check status of Location Permissions
+   *
+   * @return True if granted to the app, False if not
+   */
+  public boolean areLocationPermissionsGranted() {
+    if ((ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
+      != PackageManager.PERMISSION_GRANTED)
+      && (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+      != PackageManager.PERMISSION_GRANTED)) {
+      Timber.w("Location Permissions Not Granted Yet.  Try again after requesting.");
+      return false;
+    }
+    return true;
   }
 
   private static class ExponentialBackoffCounter {

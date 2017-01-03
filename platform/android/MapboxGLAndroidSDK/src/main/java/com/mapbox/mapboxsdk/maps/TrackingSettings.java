@@ -1,6 +1,7 @@
 package com.mapbox.mapboxsdk.maps;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.PointF;
@@ -12,6 +13,7 @@ import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
 import android.support.v4.content.ContextCompat;
 
+import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.constants.MapboxConstants;
 import com.mapbox.mapboxsdk.constants.MyBearingTracking;
@@ -20,8 +22,13 @@ import com.mapbox.mapboxsdk.location.DefaultLocationSource;
 import com.mapbox.mapboxsdk.location.LocationListener;
 import com.mapbox.mapboxsdk.maps.widgets.MyLocationView;
 import com.mapbox.mapboxsdk.telemetry.TelemetryLocationReceiver;
+import com.mapzen.android.lost.api.LocationRequest;
+import com.mapzen.android.lost.api.LocationServices;
+import com.mapzen.android.lost.api.LostApiClient;
 
 import timber.log.Timber;
+
+import static com.mapzen.android.lost.api.LocationServices.FusedLocationApi;
 
 /**
  * Settings for the user location and bearing tracking of a MapboxMap.
@@ -31,7 +38,6 @@ public final class TrackingSettings implements LocationSource.OnLocationChangedL
   private final MyLocationView myLocationView;
   private final UiSettings uiSettings;
   private final FocalPointChangeListener focalPointChangedListener;
-  private LocationSource locationSource;
   private MapboxMap.OnMyLocationChangeListener myLocationChangeListener;
 
   private boolean myLocationEnabled;
@@ -43,7 +49,6 @@ public final class TrackingSettings implements LocationSource.OnLocationChangedL
 
   TrackingSettings(@NonNull MyLocationView myLocationView, UiSettings uiSettings,
                    FocalPointChangeListener focalPointChangedListener) {
-    this.locationSource = new DefaultLocationSource();
     this.myLocationView = myLocationView;
     this.focalPointChangedListener = focalPointChangedListener;
     this.uiSettings = uiSettings;
@@ -342,29 +347,18 @@ public final class TrackingSettings implements LocationSource.OnLocationChangedL
         + "user did not accept the permission or permissions were not requested.");
       return;
     }
+
+    if (locationEnabled == myLocationEnabled) {
+      return;
+    }
+
     myLocationEnabled = locationEnabled;
     myLocationView.setEnabled(locationEnabled);
-  }
 
-  //
-  // LocationSource
-  //
-
-  void setLocationSource(@Nullable LocationSource locationSource) {
-    // cleanup previous source if active
-    if (this.locationSource != null) {
-      this.locationSource.deactivate(this);
-    }
-
-    if (locationSource == null) {
-      // we need restore the default location source
-      locationSource = new DefaultLocationSource(myLocationView.getContext());
-    }
-
-    this.locationSource = locationSource;
-    if (myLocationEnabled) {
-      // enable is location is enabled
-      locationSource.activate(this);
+    if(locationEnabled) {
+      Mapbox.activateLocationSource(this);
+    }else{
+      Mapbox.deactivateLocationSource();
     }
   }
 
@@ -373,6 +367,7 @@ public final class TrackingSettings implements LocationSource.OnLocationChangedL
    * <p>
    * Entry point to the SDK to distribute updates to locational components
    * </p>
+   *
    * @param location the new location
    */
   @Override
@@ -384,11 +379,6 @@ public final class TrackingSettings implements LocationSource.OnLocationChangedL
     if (myLocationChangeListener != null) {
       myLocationChangeListener.onMyLocationChange(location);
     }
-
-    // Update the Telemetry Receiver
-    Intent locIntent = new Intent(TelemetryLocationReceiver.INTENT_STRING);
-    locIntent.putExtra(LocationManager.KEY_LOCATION_CHANGED, location);
-    myLocationView.getContext().sendBroadcast(locIntent);
   }
 
   //

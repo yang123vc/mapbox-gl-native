@@ -1,9 +1,17 @@
 package com.mapbox.mapboxsdk;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 
 import com.mapbox.mapboxsdk.constants.MapboxConstants;
@@ -12,6 +20,12 @@ import com.mapbox.mapboxsdk.location.DefaultLocationSource;
 import com.mapbox.mapboxsdk.maps.LocationSource;
 import com.mapbox.mapboxsdk.net.ConnectivityReceiver;
 import com.mapbox.mapboxsdk.telemetry.MapboxEventManager;
+import com.mapbox.mapboxsdk.telemetry.TelemetryLocationReceiver;
+import com.mapzen.android.lost.api.LocationListener;
+import com.mapzen.android.lost.api.LocationRequest;
+import com.mapzen.android.lost.api.LostApiClient;
+
+import static com.mapzen.android.lost.api.LocationServices.FusedLocationApi;
 
 public final class Mapbox {
 
@@ -19,8 +33,7 @@ public final class Mapbox {
   private Context context;
   private String accessToken;
   private Boolean connected;
-  private LocationSource activeLocationSource;
-  private DefaultLocationSource defaultLocationSource;
+  private LocationSourceManager locationSourceManager;
 
   public static synchronized Mapbox getInstance(@NonNull Context context, @NonNull String accessToken) {
     if (INSTANCE == null) {
@@ -35,6 +48,7 @@ public final class Mapbox {
   private Mapbox(@NonNull Context context, @NonNull String accessToken) {
     this.context = context;
     this.accessToken = accessToken;
+    this.locationSourceManager = new LocationSourceManager(context);
   }
 
   /**
@@ -96,15 +110,172 @@ public final class Mapbox {
     return (activeNetwork != null && activeNetwork.isConnected());
   }
 
-  public static DefaultLocationSource getDefaultLocationSource(){
-    return INSTANCE.defaultLocationSource;
+  public static void setLocationSource(@Nullable LocationSource locationSource) {
+    INSTANCE.locationSourceManager.setLocationSource(locationSource);
   }
 
-  static void setLocationSource(LocationSource locationSource){
-    INSTANCE.activeLocationSource = locationSource;
+  public static void activateLocationSource(LocationSource.OnLocationChangedListener locationChangedListener) {
+    INSTANCE.locationSourceManager.activate(locationChangedListener);
   }
 
-  public static LocationSource getLocationSource(){
-    return INSTANCE.defaultLocationSource;
+  public static void deactivateLocationSource() {
+    INSTANCE.locationSourceManager.deactivate();
+  }
+
+  private static class LocationSourceManager implements LocationSource.OnLocationChangedListener {
+
+    private LocationSource activeLocationSource;
+    private DefaultLocationSource defaultLocationSource;
+    private LocationSource.OnLocationChangedListener locationChangeListener;
+
+    LocationSourceManager(Context context) {
+      defaultLocationSource = new DefaultLocationSource(context);
+
+      defaultLocationSource.activate(this);
+      activeLocationSource = defaultLocationSource;
+    }
+
+    void setLocationSource(@Nullable LocationSource locationSource) {
+      activeLocationSource.deactivate(this);
+
+      if (locationSource == null) {
+        // restore default location source, reactivate
+        locationSource = defaultLocationSource;
+        defaultLocationSource.activate(this);
+      }
+      activeLocationSource = locationSource;
+    }
+
+    void activate(LocationSource.OnLocationChangedListener listener) {
+      locationChangeListener = listener;
+
+      if (activeLocationSource instanceof DefaultLocationSource) {
+        defaultLocationSource.requestActiveLocationUpdates();
+      } else {
+        activeLocationSource.activate(this);
+      }
+    }
+
+    void deactivate() {
+      locationChangeListener = null;
+
+      if (activeLocationSource instanceof DefaultLocationSource) {
+        defaultLocationSource.requestPassiveLocationUpdates();
+      } else {
+        activeLocationSource.deactivate(this);
+      }
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+      if (locationChangeListener != null) {
+        locationChangeListener.onLocationChanged(location);
+      }
+
+      // Update the Telemetry Receiver
+      Intent locIntent = new Intent(TelemetryLocationReceiver.INTENT_STRING);
+      locIntent.putExtra(LocationManager.KEY_LOCATION_CHANGED, location);
+      LocalBroadcastManager.getInstance(Mapbox.getApplicationContext()).sendBroadcast(locIntent);
+    }
+  }
+
+  private static class DefaultLocationSource implements LocationSource, LostApiClient.ConnectionCallbacks, com.mapzen.android.lost.api.LocationListener {
+
+    private Context context;
+    private LostApiClient lostApiClient;
+    private LocationRequest locationRequest;
+    private OnLocationChangedListener locationChangedListener;
+
+    DefaultLocationSource(@NonNull Context context) {
+      this.context = context.getApplicationContext();
+    }
+
+    @Override
+    public void activate(OnLocationChangedListener listener) {
+      if (locationChangedListener != null) {
+        throw new IllegalStateException("Location source was already active, can't activate");
+      }
+      locationChangedListener = listener;
+      if (lostApiClient == null) {
+        lostApiClient = new LostApiClient.Builder(context).addConnectionCallbacks(this).build();
+      }
+    }
+
+    @Override
+    public void deactivate(OnLocationChangedListener listener) {
+      if (locationChangedListener == null) {
+        throw new IllegalStateException("Location source was not active, can't deactivate.");
+      }
+      locationChangedListener = null;
+    }
+
+    @Override
+    public void onConnected() {
+      cancelCurrentRequest();
+      requestPassiveLocationUpdates();
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+      if (locationChangedListener != null) {
+        locationChangedListener.onLocationChanged(location);
+      }
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+    }
+
+    @Override
+    public void onConnectionSuspended() {
+      lostApiClient = null;
+      if (locationChangedListener != null) {
+        deactivate(locationChangedListener);
+      }
+    }
+
+    private void requestActiveLocationUpdates() {
+      if (locationRequest != null) {
+        cancelCurrentRequest();
+      }
+
+      locationRequest = LocationRequest.create()
+        .setFastestInterval(1000)
+        .setSmallestDisplacement(3.0f)
+        .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+      //noinspection MissingPermission
+      FusedLocationApi.requestLocationUpdates(lostApiClient, locationRequest, this);
+    }
+
+    private void requestPassiveLocationUpdates() {
+      if (locationRequest != null) {
+        cancelCurrentRequest();
+      }
+
+      locationRequest = LocationRequest.create()
+        .setFastestInterval(1000)
+        .setSmallestDisplacement(3.0f)
+        .setPriority(LocationRequest.PRIORITY_NO_POWER);
+      //noinspection MissingPermission
+      FusedLocationApi.requestLocationUpdates(lostApiClient, locationRequest, this);
+    }
+
+    private void cancelCurrentRequest() {
+      if (locationRequest != null) {
+        FusedLocationApi.removeLocationUpdates(lostApiClient, this);
+        locationRequest = null;
+      }
+    }
+
+    boolean isPermissionsAccepted() {
+      return (ContextCompat.checkSelfPermission(getApplicationContext(),
+        Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+        || ContextCompat.checkSelfPermission(getApplicationContext(),
+        Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+    }
   }
 }

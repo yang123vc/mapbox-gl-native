@@ -1481,12 +1481,12 @@ public final class MapboxMap {
    * By using your own implementation you granularly control over the location updates that the SDK receives.
    * </p>
    *
-   * @param locationSource custom location source that provides location updates
+   * @param locationSource location source that provides location updates, null to reset to default
    * @see LocationSource
    */
   @UiThread
-  public void setLocationSource(LocationSource locationSource) {
-    // FIXME add integration
+  public void setLocationSource(@Nullable LocationSource locationSource) {
+    Mapbox.setLocationSource(locationSource);
   }
 
 
