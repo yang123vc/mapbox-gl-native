@@ -193,6 +193,10 @@ std::unique_ptr<AsyncRequest> OnlineFileSource::request(const Resource& resource
         break;
     }
 
+    if (urlTransform) {
+        urlTransform(res);
+    }
+
     return std::make_unique<OnlineFileRequest>(std::move(res), std::move(callback), *impl);
 }
 

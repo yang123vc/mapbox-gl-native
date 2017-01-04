@@ -83,6 +83,19 @@ typedef NS_OPTIONS(NSUInteger, MGLMapDebugMaskOptions) {
 #endif
 };
 
+/** TODO docs */
+typedef NS_ENUM(NSUInteger, MGLResourceKind) {
+    /** Unknown type */
+    MGLResourceKindUnknown,
+    /** TODO: docs */
+    MGLResourceKindStyle,
+    MGLResourceKindSource,
+    MGLResourceKindTile,
+    MGLResourceKindGlyphs,
+    MGLResourceKindSpriteImage,
+    MGLResourceKindSpriteJSON,
+};
+
 NS_ASSUME_NONNULL_END
 
 #ifndef NS_ARRAY_OF

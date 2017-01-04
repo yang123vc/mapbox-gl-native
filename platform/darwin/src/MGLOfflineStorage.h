@@ -6,6 +6,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class MGLOfflinePack;
 @protocol MGLOfflineRegion;
+@protocol MGLOfflineStorageDelegate;
 
 /**
  Posted by the shared `MGLOfflineStorage` object when an `MGLOfflinePack`
@@ -142,6 +143,19 @@ typedef void (^MGLOfflinePackRemovalCompletionHandler)(NSError * _Nullable error
  */
 + (instancetype)sharedOfflineStorage;
 
+#pragma mark - Accessing the Delegate
+
+/**
+ The receiver’s delegate.
+
+ An offline storage sends messages to its delegate to allow it to transform URLs
+ before they are requested from the internet. This can be used add or remove
+ custom parameters, or reroute certain requests to other servers or endpoints.
+ */
+@property(nonatomic, weak, nullable) IBOutlet id<MGLOfflineStorageDelegate> delegate;
+
+#pragma mark - Managing Offline Packs
+
 /**
  An array of all known offline packs, in the order in which they were created.
  
@@ -237,6 +251,26 @@ typedef void (^MGLOfflinePackRemovalCompletionHandler)(NSError * _Nullable error
  as part of an offline pack or due to caching during normal use of `MGLMapView`.
  */
 @property (nonatomic, readonly) unsigned long long countOfBytesCompleted;
+
+@end
+
+/**
+ The `MGLOfflineStorageDelegate` protocol defines methods that a delegate of an
+ `MGLOfflineStorage` object can optionally implement to transform various types
+ of URLs before downloading them via the internet.
+ */
+@protocol MGLOfflineStorageDelegate <NSObject>
+
+/**
+ Sent whenever a URL needs to be transformed.
+
+ @param pack The storage object processing the download.
+ @param url The original URL to be transformed.
+ @param kind The kind of URL to be transformed.
+ @return A modified URL that will now be downloaded.
+ */
+- (NSURLComponents *)offlineStorage:(MGLOfflineStorage *)storage transformURL:(NSURLComponents *)url ofKind:(MGLResourceKind)kind;
+
 
 @end
 

@@ -42,7 +42,51 @@ NSString * const MGLOfflinePackMaximumCountUserInfoKey = MGLOfflinePackUserInfoK
         sharedOfflineStorage = [[self alloc] init];
         [sharedOfflineStorage reloadPacks];
     });
+
     return sharedOfflineStorage;
+}
+
+- (void)setDelegate:(id<MGLOfflineStorageDelegate>)newValue {
+    _delegate = newValue;
+    if ([self.delegate respondsToSelector:@selector(offlineStorage:transformURL:ofKind:)]) {
+        _mbglFileSource->setURLTransform([offlineStorage = self](mbgl::Resource & res) {
+            NSURLComponents* url = [NSURLComponents
+                componentsWithString:[[NSString alloc]
+                                         initWithBytesNoCopy:const_cast<char*>(res.url.data())
+                                                      length:res.url.length()
+                                                    encoding:NSUTF8StringEncoding
+                                                freeWhenDone:NO]];
+            MGLResourceKind kind;
+            switch (res.kind) {
+            case mbgl::Resource::Kind::Style:
+                kind = MGLResourceKindStyle;
+                break;
+            case mbgl::Resource::Kind::Source:
+                kind = MGLResourceKindSource;
+                break;
+            case mbgl::Resource::Kind::Tile:
+                kind = MGLResourceKindTile;
+                break;
+            case mbgl::Resource::Kind::Glyphs:
+                kind = MGLResourceKindGlyphs;
+                break;
+            case mbgl::Resource::Kind::SpriteImage:
+                kind = MGLResourceKindSpriteImage;
+                break;
+            case mbgl::Resource::Kind::SpriteJSON:
+                kind = MGLResourceKindSpriteJSON;
+                break;
+            default:
+                kind = MGLResourceKindUnknown;
+            }
+            url = [offlineStorage.delegate offlineStorage:offlineStorage
+                                             transformURL:url
+                                                   ofKind:kind];
+            res.url = url.string.UTF8String;
+        });
+    } else {
+        _mbglFileSource->setURLTransform(nullptr);
+    }
 }
 
 /**

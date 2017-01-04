@@ -46,6 +46,10 @@ public:
         return onlineFileSource.getAccessToken();
     }
 
+    void setURLTransform(std::function<void(Resource&)> callback) {
+        onlineFileSource.setURLTransform(std::move(callback));
+    }
+
     void listRegions(std::function<void (std::exception_ptr, optional<std::vector<OfflineRegion>>)> callback) {
         try {
             callback({}, offlineDatabase.listRegions());
@@ -185,6 +189,10 @@ void DefaultFileSource::setAccessToken(const std::string& accessToken) {
 
 std::string DefaultFileSource::getAccessToken() const {
     return thread->invokeSync(&Impl::getAccessToken);
+}
+
+void DefaultFileSource::setURLTransform(std::function<void(Resource&)> callback) {
+    thread->invokeSync(&Impl::setURLTransform, std::move(callback));
 }
 
 std::unique_ptr<AsyncRequest> DefaultFileSource::request(const Resource& resource, Callback callback) {

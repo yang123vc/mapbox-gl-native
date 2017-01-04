@@ -36,6 +36,8 @@ public:
     void setAccessToken(const std::string&);
     std::string getAccessToken() const;
 
+    void setURLTransform(std::function<void(Resource&)>);
+
     std::unique_ptr<AsyncRequest> request(const Resource&, Callback) override;
 
     /*
