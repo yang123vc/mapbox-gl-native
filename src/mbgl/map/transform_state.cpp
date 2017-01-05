@@ -4,6 +4,7 @@
 #include <mbgl/util/interpolate.hpp>
 #include <mbgl/math/log2.hpp>
 #include <mbgl/math/clamp.hpp>
+#include <mbgl/util/logging.hpp>
 
 namespace mbgl {
 
@@ -338,7 +339,7 @@ void TransformState::setScalePoint(const double newScale, const ScreenCoordinate
     double constrainedScale = newScale;
     ScreenCoordinate constrainedPoint = point;
     constrain(constrainedScale, constrainedPoint.x, constrainedPoint.y);
-
+    Log::Info(Event::General, "setScalePoint");
     scale = constrainedScale;
     x = constrainedPoint.x;
     y = constrainedPoint.y;

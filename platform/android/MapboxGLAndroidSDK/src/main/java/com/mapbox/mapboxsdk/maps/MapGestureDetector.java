@@ -2,9 +2,11 @@ package com.mapbox.mapboxsdk.maps;
 
 import android.content.Context;
 import android.graphics.PointF;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.ScaleGestureDetectorCompat;
+import android.util.Log;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -17,6 +19,8 @@ import com.almeros.android.multitouch.gesturedetectors.TwoFingerGestureDetector;
 import com.mapbox.mapboxsdk.constants.MapboxConstants;
 import com.mapbox.mapboxsdk.telemetry.MapboxEvent;
 import com.mapbox.mapboxsdk.utils.MathUtils;
+
+import timber.log.Timber;
 
 /**
  * Manages gestures events on a MapView.
@@ -49,6 +53,9 @@ final class MapGestureDetector {
   private boolean dragStarted = false;
   private boolean quickZoom = false;
   private boolean scrollInProgress = false;
+
+  private long nextScroll;
+  private float distanceX, distanceY;
 
   MapGestureDetector(Context context, Transform transform, Projection projection, UiSettings uiSettings,
                      TrackingSettings trackingSettings, AnnotationManager annotationManager) {
@@ -152,6 +159,8 @@ final class MapGestureDetector {
         // Scroll / Pan Has Stopped
         if (scrollInProgress) {
           MapboxEvent.trackGestureDragEndEvent(projection, event.getX(), event.getY(), transform.getZoom());
+          nextScroll = 0;
+          Timber.w("SCROLLINGSTOP");
           scrollInProgress = false;
         }
 
@@ -297,21 +306,27 @@ final class MapGestureDetector {
       if (!trackingSettings.isScrollGestureCurrentlyEnabled()) {
         return false;
       }
+      float screenDensity = uiSettings.getPixelRatio();
+
+      if (Math.abs(velocityX / screenDensity) < 500 && Math.abs(velocityY / screenDensity) < 500) {
+        Log.e("TAG", "FLING ignored");
+        return false;
+      }
 
       trackingSettings.resetTrackingModesIfRequired(true, false);
 
       // Cancel any animation
       transform.cancelTransitions();
 
-      float screenDensity = uiSettings.getPixelRatio();
 
       double tilt = transform.getTilt();
-      // tilt results in a bigger translation, need to limit input #5281, limitFactor ranges from 2 -> 8
-      double limitFactor = 2 + ((tilt != 0) ? (tilt / 10) : 0);
+      // tilt results in a bigger translation, need to limit input #5281, limitFactor ranges from 0 -> 6
+      double limitFactor = 1 + ((tilt != 0) ? (tilt / 10) : 0);
       double offsetX = velocityX / limitFactor / screenDensity;
       double offsetY = velocityY / limitFactor / screenDensity;
 
       transform.setGestureInProgress(true);
+      Log.e("TAG", "FLING " + velocityX / screenDensity + " " + velocityY / screenDensity);
       transform.moveBy(offsetX, offsetY, MapboxConstants.ANIMATION_DURATION_FLING);
       transform.setGestureInProgress(false);
 
@@ -326,7 +341,7 @@ final class MapGestureDetector {
 
     // Called for drags
     @Override
-    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+    public boolean onScroll(MotionEvent e1, MotionEvent e2, float x, float y) {
       if (!scrollInProgress) {
         scrollInProgress = true;
       }
@@ -337,6 +352,16 @@ final class MapGestureDetector {
       if (dragStarted) {
         return false;
       }
+//
+//      distanceX = distanceX + x;
+//      distanceY = distanceY + y;
+//
+//      long currentTime = SystemClock.elapsedRealtime();
+//      if (currentTime < nextScroll) {
+//        Timber.e("NO " + "adding " + x + " " + y);
+//        // returning as handled, we are ratelimiting the amount of update we
+//        return true;
+//      }
 
       // reset tracking if needed
       trackingSettings.resetTrackingModesIfRequired(true, false);
@@ -344,7 +369,13 @@ final class MapGestureDetector {
       transform.cancelTransitions();
 
       // Scroll the map
-      transform.moveBy(-distanceX, -distanceY, 0 /*no duration*/);
+      Timber.i("YES, " + distanceX + distanceY);
+      transform.moveBy(-x, -y, 0 /*no duration*/);
+
+//      transform.moveBy(-distanceX, -distanceY, nextScroll != 0 ? currentTime - nextScroll : 0 /*no duration*/);
+//      distanceX = 0;
+//      distanceY = 0;
+//      nextScroll = currentTime + 25;
 
       if (onScrollListener != null) {
         onScrollListener.onScroll();
