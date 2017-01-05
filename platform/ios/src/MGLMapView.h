@@ -4,6 +4,7 @@
 #import <UIKit/UIKit.h>
 #import <CoreLocation/CoreLocation.h>
 
+#import "MGLFoundation.h"
 #import "MGLTypes.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -23,13 +24,13 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol MGLFeature;
 
 /** The default deceleration rate for a map view. */
-extern const CGFloat MGLMapViewDecelerationRateNormal;
+extern MGL_EXPORT const CGFloat MGLMapViewDecelerationRateNormal;
 
 /** A fast deceleration rate for a map view. */
-extern const CGFloat MGLMapViewDecelerationRateFast;
+extern MGL_EXPORT const CGFloat MGLMapViewDecelerationRateFast;
 
 /** Disables decleration in a map view. */
-extern const CGFloat MGLMapViewDecelerationRateImmediate;
+extern MGL_EXPORT const CGFloat MGLMapViewDecelerationRateImmediate;
 
 /**
  The vertical alignment of an annotation within a map view. Used with
@@ -76,7 +77,7 @@ typedef NS_ENUM(NSUInteger, MGLAnnotationVerticalAlignment) {
  @note You are responsible for getting permission to use the map data and for
  ensuring that your use adheres to the relevant terms of use.
  */
-IB_DESIGNABLE
+MGL_EXPORT IB_DESIGNABLE
 @interface MGLMapView : UIView
 
 #pragma mark Creating Instances
