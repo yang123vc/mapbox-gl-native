@@ -49,6 +49,7 @@
 #import "MGLUserLocation_Private.h"
 #import "MGLAnnotationImage_Private.h"
 #import "MGLAnnotationView_Private.h"
+#import "MGLScaleBarView_Private.h"
 #import "MGLStyle_Private.h"
 #import "MGLStyleLayer_Private.h"
 #import "MGLMapboxEvents.h"
@@ -230,6 +231,8 @@ public:
 @property (nonatomic) EAGLContext *context;
 @property (nonatomic) GLKView *glView;
 @property (nonatomic) UIImageView *glSnapshotView;
+@property (nonatomic, readwrite) MGLScaleBarView *scaleBarView;
+@property (nonatomic) NS_MUTABLE_ARRAY_OF(NSLayoutConstraint *) *scaleControlViewConstraints;
 @property (nonatomic, readwrite) UIImageView *compassView;
 @property (nonatomic) NS_MUTABLE_ARRAY_OF(NSLayoutConstraint *) *compassViewConstraints;
 @property (nonatomic, readwrite) UIImageView *logoView;
@@ -484,6 +487,13 @@ public:
     _compassView.translatesAutoresizingMaskIntoConstraints = NO;
     [self addSubview:_compassView];
     _compassViewConstraints = [NSMutableArray array];
+    
+    // setup scale control
+    //
+    _scaleBarView = [[MGLScaleBarView alloc] init];
+    _scaleBarView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self addSubview:_scaleBarView];
+    _scaleControlViewConstraints = [NSMutableArray array];
 
     // setup interaction
     //
@@ -780,6 +790,31 @@ public:
 
 - (void)updateConstraints
 {
+    // scale control
+    //
+    [self removeConstraints:self.scaleControlViewConstraints];
+    [self.scaleControlViewConstraints removeAllObjects];
+    
+    [self.scaleControlViewConstraints addObject:
+     [NSLayoutConstraint constraintWithItem:self.scaleBarView
+                                  attribute:NSLayoutAttributeTop
+                                  relatedBy:NSLayoutRelationEqual
+                                     toItem:self
+                                  attribute:NSLayoutAttributeTop
+                                 multiplier:1
+                                   constant:5+self.contentInset.top]];
+    
+    [self.scaleControlViewConstraints addObject:
+     [NSLayoutConstraint constraintWithItem:self.scaleBarView
+                                  attribute:NSLayoutAttributeLeading
+                                  relatedBy:NSLayoutRelationEqual
+                                     toItem:self
+                                  attribute:NSLayoutAttributeLeading
+                                 multiplier:1
+                                   constant:8 + self.contentInset.left]];
+    
+    [self addConstraints:self.scaleControlViewConstraints];
+    
     // compass
     //
     [self removeConstraints:self.compassViewConstraints];
@@ -1223,6 +1258,12 @@ public:
         {
             CGPoint offset = CGPointMake(velocity.x * self.decelerationRate / 4, velocity.y * self.decelerationRate / 4);
             _mbglMap->moveBy({ offset.x, offset.y }, MGLDurationInSeconds(self.decelerationRate));
+            __weak MGLMapView *weakSelf = self;
+            [self animateWithDelay:self.decelerationRate animations:^{
+                [weakSelf.scaleBarView fadeOut];
+            }];
+        } else {
+            [self.scaleBarView fadeOut];
         }
 
         [self notifyGestureDidEndWithDrift:drift];
@@ -1313,6 +1354,12 @@ public:
         if (velocity && duration)
         {
             _mbglMap->setScale(newScale, mbgl::ScreenCoordinate { centerPoint.x, centerPoint.y }, MGLDurationInSeconds(duration));
+            __weak MGLMapView *weakSelf = self;
+            [self animateWithDelay:duration animations:^{
+                [weakSelf.scaleBarView fadeOut];
+            }];
+        } else {
+            [self.scaleBarView fadeOut];
         }
 
         [self notifyGestureDidEndWithDrift:velocity && duration];
@@ -1380,12 +1427,14 @@ public:
             [self animateWithDelay:decelerationRate animations:^
              {
                  [weakSelf unrotateIfNeededForGesture];
+                 [weakSelf.scaleBarView fadeOut];
              }];
         }
         else
         {
             [self notifyGestureDidEndWithDrift:NO];
             [self unrotateIfNeededForGesture];
+            [self.scaleBarView fadeOut];
         }
     }
 }
@@ -1507,6 +1556,7 @@ public:
         [self animateWithDelay:MGLAnimationDuration animations:^
         {
             [weakSelf unrotateIfNeededForGesture];
+            [weakSelf.scaleBarView fadeOut];
         }];
     }
 }
@@ -1535,6 +1585,7 @@ public:
         [self animateWithDelay:MGLAnimationDuration animations:^
         {
             [weakSelf unrotateIfNeededForGesture];
+            [weakSelf.scaleBarView fadeOut];
         }];
     }
 }
@@ -1574,6 +1625,7 @@ public:
     {
         [self notifyGestureDidEndWithDrift:NO];
         [self unrotateIfNeededForGesture];
+        [self.scaleBarView fadeOut];
     }
 }
 
@@ -1606,6 +1658,7 @@ public:
     {
         [self notifyGestureDidEndWithDrift:NO];
         [self unrotateIfNeededForGesture];
+        [self.scaleBarView fadeOut];
     }
 }
 
@@ -4595,7 +4648,8 @@ public:
         case mbgl::MapChangeRegionIsChanging:
         {
             [self updateCompass];
-
+            self.scaleBarView.metersPerPoint = [self metersPerPointAtLatitude:self.latitude];
+            
             if ([self.delegate respondsToSelector:@selector(mapViewRegionIsChanging:)])
             {
                 [self.delegate mapViewRegionIsChanging:self];
