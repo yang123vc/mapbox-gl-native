@@ -1,10 +1,11 @@
-package com.mapbox.mapboxsdk.testapp.style;
 // This file is generated. Edit android/platform/scripts/generate-style-code.js, then run `make android-style-code`.
+package com.mapbox.mapboxsdk.testapp.style;
 
 import android.graphics.Color;
 import android.support.test.espresso.Espresso;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
+import timber.log.Timber;
 
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.style.layers.FillLayer;
@@ -18,21 +19,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import timber.log.Timber;
-
-import static com.mapbox.mapboxsdk.style.layers.Property.FILL_TRANSLATE_ANCHOR_MAP;
-import static com.mapbox.mapboxsdk.style.layers.Property.NONE;
-import static com.mapbox.mapboxsdk.style.layers.Property.VISIBLE;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillAntialias;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillColor;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillOpacity;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillOutlineColor;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillPattern;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillTranslate;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillTranslateAnchor;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
+import static com.mapbox.mapboxsdk.style.layers.Property.*;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.*;
 
 /**
  * Basic smoke tests for FillLayer
@@ -40,247 +29,247 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(AndroidJUnit4.class)
 public class FillLayerTest extends BaseStyleTest {
 
-  @Rule
-  public final ActivityTestRule<RuntimeStyleTestActivity> rule = new ActivityTestRule<>(RuntimeStyleTestActivity.class);
+    @Rule
+    public final ActivityTestRule<RuntimeStyleTestActivity> rule = new ActivityTestRule<>(RuntimeStyleTestActivity.class);
 
-  private FillLayer layer;
+    private FillLayer layer;
 
-  private OnMapReadyIdlingResource idlingResource;
+    private OnMapReadyIdlingResource idlingResource;
 
-  private MapboxMap mapboxMap;
+    private MapboxMap mapboxMap;
 
-  @Before
-  public void setup() {
-    idlingResource = new OnMapReadyIdlingResource(rule.getActivity());
-    Espresso.registerIdlingResources(idlingResource);
-  }
-
-  @Test
-  public void testSetVisibility() {
-    checkViewIsDisplayed(R.id.mapView);
-
-    mapboxMap = rule.getActivity().getMapboxMap();
-
-    if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
-      Timber.i("Adding layer");
-      layer = new FillLayer("my-layer", "composite");
-      layer.setSourceLayer("composite");
-      mapboxMap.addLayer(layer);
-      //Layer reference is now stale, get new reference
-      layer = mapboxMap.getLayerAs("my-layer");
+    @Before
+    public void setup() {
+        idlingResource = new OnMapReadyIdlingResource(rule.getActivity());
+        Espresso.registerIdlingResources(idlingResource);
     }
-    Timber.i("visibility");
-    assertNotNull(layer);
 
-    //Get initial
-    assertEquals(layer.getVisibility().getValue(), VISIBLE);
+    @Test
+    public void testSetVisibility() {
+        checkViewIsDisplayed(R.id.mapView);
 
-    //Set
-    layer.setProperties(visibility(NONE));
-    assertEquals(layer.getVisibility().getValue(), NONE);
-  }
+        mapboxMap = rule.getActivity().getMapboxMap();
 
-  @Test
-  public void testFillAntialias() {
-    checkViewIsDisplayed(R.id.mapView);
+        if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
+            Timber.i("Adding layer");
+            layer = new FillLayer("my-layer", "composite");
+            layer.setSourceLayer("composite");
+            mapboxMap.addLayer(layer);
+            //Layer reference is now stale, get new reference
+            layer = mapboxMap.getLayerAs("my-layer");
+        }
+        Timber.i("visibility");
+        assertNotNull(layer);
 
-    mapboxMap = rule.getActivity().getMapboxMap();
+        //Get initial
+        assertEquals(layer.getVisibility().getValue(), VISIBLE);
 
-    if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
-      Timber.i("Adding layer");
-      layer = new FillLayer("my-layer", "composite");
-      layer.setSourceLayer("composite");
-      mapboxMap.addLayer(layer);
-      //Layer reference is now stale, get new reference
-      layer = mapboxMap.getLayerAs("my-layer");
+        //Set
+        layer.setProperties(visibility(NONE));
+        assertEquals(layer.getVisibility().getValue(), NONE);
     }
-    Timber.i("fill-antialias");
-    assertNotNull(layer);
 
-    //Set and Get
-    layer.setProperties(fillAntialias(true));
-    assertEquals((Boolean) layer.getFillAntialias().getValue(), (Boolean) true);
-  }
+    @Test
+    public void testFillAntialias() {
+        checkViewIsDisplayed(R.id.mapView);
 
-  @Test
-  public void testFillOpacity() {
-    checkViewIsDisplayed(R.id.mapView);
+        mapboxMap = rule.getActivity().getMapboxMap();
 
-    mapboxMap = rule.getActivity().getMapboxMap();
+        if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
+            Timber.i("Adding layer");
+            layer = new FillLayer("my-layer", "composite");
+            layer.setSourceLayer("composite");
+            mapboxMap.addLayer(layer);
+            //Layer reference is now stale, get new reference
+            layer = mapboxMap.getLayerAs("my-layer");
+        }
+        Timber.i("fill-antialias");
+        assertNotNull(layer);
 
-    if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
-      Timber.i("Adding layer");
-      layer = new FillLayer("my-layer", "composite");
-      layer.setSourceLayer("composite");
-      mapboxMap.addLayer(layer);
-      //Layer reference is now stale, get new reference
-      layer = mapboxMap.getLayerAs("my-layer");
+        //Set and Get
+        layer.setProperties(fillAntialias(true));
+        assertEquals((Boolean) layer.getFillAntialias().getValue(), (Boolean) true);
     }
-    Timber.i("fill-opacity");
-    assertNotNull(layer);
 
-    //Set and Get
-    layer.setProperties(fillOpacity(0.3f));
-    assertEquals((Float) layer.getFillOpacity().getValue(), (Float) 0.3f);
-  }
+    @Test
+    public void testFillOpacity() {
+        checkViewIsDisplayed(R.id.mapView);
 
-  @Test
-  public void testFillColor() {
-    checkViewIsDisplayed(R.id.mapView);
+        mapboxMap = rule.getActivity().getMapboxMap();
 
-    mapboxMap = rule.getActivity().getMapboxMap();
+        if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
+            Timber.i("Adding layer");
+            layer = new FillLayer("my-layer", "composite");
+            layer.setSourceLayer("composite");
+            mapboxMap.addLayer(layer);
+            //Layer reference is now stale, get new reference
+            layer = mapboxMap.getLayerAs("my-layer");
+        }
+        Timber.i("fill-opacity");
+        assertNotNull(layer);
 
-    if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
-      Timber.i("Adding layer");
-      layer = new FillLayer("my-layer", "composite");
-      layer.setSourceLayer("composite");
-      mapboxMap.addLayer(layer);
-      //Layer reference is now stale, get new reference
-      layer = mapboxMap.getLayerAs("my-layer");
+        //Set and Get
+        layer.setProperties(fillOpacity(0.3f));
+        assertEquals((Float) layer.getFillOpacity().getValue(), (Float) 0.3f);
     }
-    Timber.i("fill-color");
-    assertNotNull(layer);
 
-    //Set and Get
-    layer.setProperties(fillColor("rgba(0, 0, 0, 1)"));
-    assertEquals((String) layer.getFillColor().getValue(), (String) "rgba(0, 0, 0, 1)");
-  }
+    @Test
+    public void testFillColor() {
+        checkViewIsDisplayed(R.id.mapView);
 
-  @Test
-  public void testFillColorAsInt() {
-    checkViewIsDisplayed(R.id.mapView);
+        mapboxMap = rule.getActivity().getMapboxMap();
 
-    mapboxMap = rule.getActivity().getMapboxMap();
+        if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
+            Timber.i("Adding layer");
+            layer = new FillLayer("my-layer", "composite");
+            layer.setSourceLayer("composite");
+            mapboxMap.addLayer(layer);
+            //Layer reference is now stale, get new reference
+            layer = mapboxMap.getLayerAs("my-layer");
+        }
+        Timber.i("fill-color");
+        assertNotNull(layer);
 
-    if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
-      Timber.i("Adding layer");
-      layer = new FillLayer("my-layer", "composite");
-      layer.setSourceLayer("composite");
-      mapboxMap.addLayer(layer);
-      //Layer reference is now stale, get new reference
-      layer = mapboxMap.getLayerAs("my-layer");
+        //Set and Get
+        layer.setProperties(fillColor("rgba(0, 0, 0, 1)"));
+        assertEquals((String) layer.getFillColor().getValue(), (String) "rgba(0, 0, 0, 1)");
     }
-    Timber.i("fill-color");
-    assertNotNull(layer);
 
-    //Set and Get
-    layer.setProperties(fillColor(Color.RED));
-    assertEquals(layer.getFillColorAsInt(), Color.RED);
-  }
+    @Test
+    public void testFillColorAsInt() {
+        checkViewIsDisplayed(R.id.mapView);
 
-  @Test
-  public void testFillOutlineColor() {
-    checkViewIsDisplayed(R.id.mapView);
+        mapboxMap = rule.getActivity().getMapboxMap();
 
-    mapboxMap = rule.getActivity().getMapboxMap();
+        if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
+            Timber.i("Adding layer");
+            layer = new FillLayer("my-layer", "composite");
+            layer.setSourceLayer("composite");
+            mapboxMap.addLayer(layer);
+            //Layer reference is now stale, get new reference
+            layer = mapboxMap.getLayerAs("my-layer");
+        }
+        Timber.i("fill-color");
+        assertNotNull(layer);
 
-    if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
-      Timber.i("Adding layer");
-      layer = new FillLayer("my-layer", "composite");
-      layer.setSourceLayer("composite");
-      mapboxMap.addLayer(layer);
-      //Layer reference is now stale, get new reference
-      layer = mapboxMap.getLayerAs("my-layer");
+        //Set and Get
+        layer.setProperties(fillColor(Color.RED));
+        assertEquals(layer.getFillColorAsInt(), Color.RED);
     }
-    Timber.i("fill-outline-color");
-    assertNotNull(layer);
 
-    //Set and Get
-    layer.setProperties(fillOutlineColor("rgba(0, 0, 0, 1)"));
-    assertEquals((String) layer.getFillOutlineColor().getValue(), (String) "rgba(0, 0, 0, 1)");
-  }
+    @Test
+    public void testFillOutlineColor() {
+        checkViewIsDisplayed(R.id.mapView);
 
-  @Test
-  public void testFillOutlineColorAsInt() {
-    checkViewIsDisplayed(R.id.mapView);
+        mapboxMap = rule.getActivity().getMapboxMap();
 
-    mapboxMap = rule.getActivity().getMapboxMap();
+        if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
+            Timber.i("Adding layer");
+            layer = new FillLayer("my-layer", "composite");
+            layer.setSourceLayer("composite");
+            mapboxMap.addLayer(layer);
+            //Layer reference is now stale, get new reference
+            layer = mapboxMap.getLayerAs("my-layer");
+        }
+        Timber.i("fill-outline-color");
+        assertNotNull(layer);
 
-    if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
-      Timber.i("Adding layer");
-      layer = new FillLayer("my-layer", "composite");
-      layer.setSourceLayer("composite");
-      mapboxMap.addLayer(layer);
-      //Layer reference is now stale, get new reference
-      layer = mapboxMap.getLayerAs("my-layer");
+        //Set and Get
+        layer.setProperties(fillOutlineColor("rgba(0, 0, 0, 1)"));
+        assertEquals((String) layer.getFillOutlineColor().getValue(), (String) "rgba(0, 0, 0, 1)");
     }
-    Timber.i("fill-outline-color");
-    assertNotNull(layer);
 
-    //Set and Get
-    layer.setProperties(fillOutlineColor(Color.RED));
-    assertEquals(layer.getFillOutlineColorAsInt(), Color.RED);
-  }
+    @Test
+    public void testFillOutlineColorAsInt() {
+        checkViewIsDisplayed(R.id.mapView);
 
-  @Test
-  public void testFillTranslate() {
-    checkViewIsDisplayed(R.id.mapView);
+        mapboxMap = rule.getActivity().getMapboxMap();
 
-    mapboxMap = rule.getActivity().getMapboxMap();
+        if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
+            Timber.i("Adding layer");
+            layer = new FillLayer("my-layer", "composite");
+            layer.setSourceLayer("composite");
+            mapboxMap.addLayer(layer);
+            //Layer reference is now stale, get new reference
+            layer = mapboxMap.getLayerAs("my-layer");
+        }
+        Timber.i("fill-outline-color");
+        assertNotNull(layer);
 
-    if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
-      Timber.i("Adding layer");
-      layer = new FillLayer("my-layer", "composite");
-      layer.setSourceLayer("composite");
-      mapboxMap.addLayer(layer);
-      //Layer reference is now stale, get new reference
-      layer = mapboxMap.getLayerAs("my-layer");
+        //Set and Get
+        layer.setProperties(fillOutlineColor(Color.RED));
+        assertEquals(layer.getFillOutlineColorAsInt(), Color.RED);
     }
-    Timber.i("fill-translate");
-    assertNotNull(layer);
 
-    //Set and Get
-    layer.setProperties(fillTranslate(new Float[] {0f, 0f}));
-    assertEquals((Float[]) layer.getFillTranslate().getValue(), (Float[]) new Float[] {0f, 0f});
-  }
+    @Test
+    public void testFillTranslate() {
+        checkViewIsDisplayed(R.id.mapView);
 
-  @Test
-  public void testFillTranslateAnchor() {
-    checkViewIsDisplayed(R.id.mapView);
+        mapboxMap = rule.getActivity().getMapboxMap();
 
-    mapboxMap = rule.getActivity().getMapboxMap();
+        if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
+            Timber.i("Adding layer");
+            layer = new FillLayer("my-layer", "composite");
+            layer.setSourceLayer("composite");
+            mapboxMap.addLayer(layer);
+            //Layer reference is now stale, get new reference
+            layer = mapboxMap.getLayerAs("my-layer");
+        }
+        Timber.i("fill-translate");
+        assertNotNull(layer);
 
-    if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
-      Timber.i("Adding layer");
-      layer = new FillLayer("my-layer", "composite");
-      layer.setSourceLayer("composite");
-      mapboxMap.addLayer(layer);
-      //Layer reference is now stale, get new reference
-      layer = mapboxMap.getLayerAs("my-layer");
+        //Set and Get
+        layer.setProperties(fillTranslate(new Float[]{0f,0f}));
+        assertEquals((Float[]) layer.getFillTranslate().getValue(), (Float[]) new Float[]{0f,0f});
     }
-    Timber.i("fill-translate-anchor");
-    assertNotNull(layer);
 
-    //Set and Get
-    layer.setProperties(fillTranslateAnchor(FILL_TRANSLATE_ANCHOR_MAP));
-    assertEquals((String) layer.getFillTranslateAnchor().getValue(), (String) FILL_TRANSLATE_ANCHOR_MAP);
-  }
+    @Test
+    public void testFillTranslateAnchor() {
+        checkViewIsDisplayed(R.id.mapView);
 
-  @Test
-  public void testFillPattern() {
-    checkViewIsDisplayed(R.id.mapView);
+        mapboxMap = rule.getActivity().getMapboxMap();
 
-    mapboxMap = rule.getActivity().getMapboxMap();
+        if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
+            Timber.i("Adding layer");
+            layer = new FillLayer("my-layer", "composite");
+            layer.setSourceLayer("composite");
+            mapboxMap.addLayer(layer);
+            //Layer reference is now stale, get new reference
+            layer = mapboxMap.getLayerAs("my-layer");
+        }
+        Timber.i("fill-translate-anchor");
+        assertNotNull(layer);
 
-    if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
-      Timber.i("Adding layer");
-      layer = new FillLayer("my-layer", "composite");
-      layer.setSourceLayer("composite");
-      mapboxMap.addLayer(layer);
-      //Layer reference is now stale, get new reference
-      layer = mapboxMap.getLayerAs("my-layer");
+        //Set and Get
+        layer.setProperties(fillTranslateAnchor(FILL_TRANSLATE_ANCHOR_MAP));
+        assertEquals((String) layer.getFillTranslateAnchor().getValue(), (String) FILL_TRANSLATE_ANCHOR_MAP);
     }
-    Timber.i("fill-pattern");
-    assertNotNull(layer);
 
-    //Set and Get
-    layer.setProperties(fillPattern("pedestrian-polygon"));
-    assertEquals((String) layer.getFillPattern().getValue(), (String) "pedestrian-polygon");
-  }
+    @Test
+    public void testFillPattern() {
+        checkViewIsDisplayed(R.id.mapView);
+
+        mapboxMap = rule.getActivity().getMapboxMap();
+
+        if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
+            Timber.i("Adding layer");
+            layer = new FillLayer("my-layer", "composite");
+            layer.setSourceLayer("composite");
+            mapboxMap.addLayer(layer);
+            //Layer reference is now stale, get new reference
+            layer = mapboxMap.getLayerAs("my-layer");
+        }
+        Timber.i("fill-pattern");
+        assertNotNull(layer);
+
+        //Set and Get
+        layer.setProperties(fillPattern("pedestrian-polygon"));
+        assertEquals((String) layer.getFillPattern().getValue(), (String) "pedestrian-polygon");
+    }
 
 
-  @After
-  public void unregisterIntentServiceIdlingResource() {
-    Espresso.unregisterIdlingResources(idlingResource);
-  }
+   @After
+   public void unregisterIntentServiceIdlingResource() {
+       Espresso.unregisterIdlingResources(idlingResource);
+   }
 }

@@ -1,9 +1,11 @@
-package com.mapbox.mapboxsdk.testapp.style;
 // This file is generated. Edit android/platform/scripts/generate-style-code.js, then run `make android-style-code`.
+package com.mapbox.mapboxsdk.testapp.style;
 
+import android.graphics.Color;
 import android.support.test.espresso.Espresso;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
+import timber.log.Timber;
 
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.style.layers.RasterLayer;
@@ -17,20 +19,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import timber.log.Timber;
-
-import static com.mapbox.mapboxsdk.style.layers.Property.NONE;
-import static com.mapbox.mapboxsdk.style.layers.Property.VISIBLE;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.rasterBrightnessMax;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.rasterBrightnessMin;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.rasterContrast;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.rasterFadeDuration;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.rasterHueRotate;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.rasterOpacity;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.rasterSaturation;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
+import static com.mapbox.mapboxsdk.style.layers.Property.*;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.*;
 
 /**
  * Basic smoke tests for RasterLayer
@@ -38,203 +29,203 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(AndroidJUnit4.class)
 public class RasterLayerTest extends BaseStyleTest {
 
-  @Rule
-  public final ActivityTestRule<RuntimeStyleTestActivity> rule = new ActivityTestRule<>(RuntimeStyleTestActivity.class);
+    @Rule
+    public final ActivityTestRule<RuntimeStyleTestActivity> rule = new ActivityTestRule<>(RuntimeStyleTestActivity.class);
 
-  private RasterLayer layer;
+    private RasterLayer layer;
 
-  private OnMapReadyIdlingResource idlingResource;
+    private OnMapReadyIdlingResource idlingResource;
 
-  private MapboxMap mapboxMap;
+    private MapboxMap mapboxMap;
 
-  @Before
-  public void setup() {
-    idlingResource = new OnMapReadyIdlingResource(rule.getActivity());
-    Espresso.registerIdlingResources(idlingResource);
-  }
-
-  @Test
-  public void testSetVisibility() {
-    checkViewIsDisplayed(R.id.mapView);
-
-    mapboxMap = rule.getActivity().getMapboxMap();
-
-    if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
-      Timber.i("Adding layer");
-      layer = new RasterLayer("my-layer", "composite");
-      layer.setSourceLayer("composite");
-      mapboxMap.addLayer(layer);
-      //Layer reference is now stale, get new reference
-      layer = mapboxMap.getLayerAs("my-layer");
+    @Before
+    public void setup() {
+        idlingResource = new OnMapReadyIdlingResource(rule.getActivity());
+        Espresso.registerIdlingResources(idlingResource);
     }
-    Timber.i("visibility");
-    assertNotNull(layer);
 
-    //Get initial
-    assertEquals(layer.getVisibility().getValue(), VISIBLE);
+    @Test
+    public void testSetVisibility() {
+        checkViewIsDisplayed(R.id.mapView);
 
-    //Set
-    layer.setProperties(visibility(NONE));
-    assertEquals(layer.getVisibility().getValue(), NONE);
-  }
+        mapboxMap = rule.getActivity().getMapboxMap();
 
-  @Test
-  public void testRasterOpacity() {
-    checkViewIsDisplayed(R.id.mapView);
+        if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
+            Timber.i("Adding layer");
+            layer = new RasterLayer("my-layer", "composite");
+            layer.setSourceLayer("composite");
+            mapboxMap.addLayer(layer);
+            //Layer reference is now stale, get new reference
+            layer = mapboxMap.getLayerAs("my-layer");
+        }
+        Timber.i("visibility");
+        assertNotNull(layer);
 
-    mapboxMap = rule.getActivity().getMapboxMap();
+        //Get initial
+        assertEquals(layer.getVisibility().getValue(), VISIBLE);
 
-    if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
-      Timber.i("Adding layer");
-      layer = new RasterLayer("my-layer", "composite");
-      layer.setSourceLayer("composite");
-      mapboxMap.addLayer(layer);
-      //Layer reference is now stale, get new reference
-      layer = mapboxMap.getLayerAs("my-layer");
+        //Set
+        layer.setProperties(visibility(NONE));
+        assertEquals(layer.getVisibility().getValue(), NONE);
     }
-    Timber.i("raster-opacity");
-    assertNotNull(layer);
 
-    //Set and Get
-    layer.setProperties(rasterOpacity(0.3f));
-    assertEquals((Float) layer.getRasterOpacity().getValue(), (Float) 0.3f);
-  }
+    @Test
+    public void testRasterOpacity() {
+        checkViewIsDisplayed(R.id.mapView);
 
-  @Test
-  public void testRasterHueRotate() {
-    checkViewIsDisplayed(R.id.mapView);
+        mapboxMap = rule.getActivity().getMapboxMap();
 
-    mapboxMap = rule.getActivity().getMapboxMap();
+        if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
+            Timber.i("Adding layer");
+            layer = new RasterLayer("my-layer", "composite");
+            layer.setSourceLayer("composite");
+            mapboxMap.addLayer(layer);
+            //Layer reference is now stale, get new reference
+            layer = mapboxMap.getLayerAs("my-layer");
+        }
+        Timber.i("raster-opacity");
+        assertNotNull(layer);
 
-    if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
-      Timber.i("Adding layer");
-      layer = new RasterLayer("my-layer", "composite");
-      layer.setSourceLayer("composite");
-      mapboxMap.addLayer(layer);
-      //Layer reference is now stale, get new reference
-      layer = mapboxMap.getLayerAs("my-layer");
+        //Set and Get
+        layer.setProperties(rasterOpacity(0.3f));
+        assertEquals((Float) layer.getRasterOpacity().getValue(), (Float) 0.3f);
     }
-    Timber.i("raster-hue-rotate");
-    assertNotNull(layer);
 
-    //Set and Get
-    layer.setProperties(rasterHueRotate(0.3f));
-    assertEquals((Float) layer.getRasterHueRotate().getValue(), (Float) 0.3f);
-  }
+    @Test
+    public void testRasterHueRotate() {
+        checkViewIsDisplayed(R.id.mapView);
 
-  @Test
-  public void testRasterBrightnessMin() {
-    checkViewIsDisplayed(R.id.mapView);
+        mapboxMap = rule.getActivity().getMapboxMap();
 
-    mapboxMap = rule.getActivity().getMapboxMap();
+        if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
+            Timber.i("Adding layer");
+            layer = new RasterLayer("my-layer", "composite");
+            layer.setSourceLayer("composite");
+            mapboxMap.addLayer(layer);
+            //Layer reference is now stale, get new reference
+            layer = mapboxMap.getLayerAs("my-layer");
+        }
+        Timber.i("raster-hue-rotate");
+        assertNotNull(layer);
 
-    if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
-      Timber.i("Adding layer");
-      layer = new RasterLayer("my-layer", "composite");
-      layer.setSourceLayer("composite");
-      mapboxMap.addLayer(layer);
-      //Layer reference is now stale, get new reference
-      layer = mapboxMap.getLayerAs("my-layer");
+        //Set and Get
+        layer.setProperties(rasterHueRotate(0.3f));
+        assertEquals((Float) layer.getRasterHueRotate().getValue(), (Float) 0.3f);
     }
-    Timber.i("raster-brightness-min");
-    assertNotNull(layer);
 
-    //Set and Get
-    layer.setProperties(rasterBrightnessMin(0.3f));
-    assertEquals((Float) layer.getRasterBrightnessMin().getValue(), (Float) 0.3f);
-  }
+    @Test
+    public void testRasterBrightnessMin() {
+        checkViewIsDisplayed(R.id.mapView);
 
-  @Test
-  public void testRasterBrightnessMax() {
-    checkViewIsDisplayed(R.id.mapView);
+        mapboxMap = rule.getActivity().getMapboxMap();
 
-    mapboxMap = rule.getActivity().getMapboxMap();
+        if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
+            Timber.i("Adding layer");
+            layer = new RasterLayer("my-layer", "composite");
+            layer.setSourceLayer("composite");
+            mapboxMap.addLayer(layer);
+            //Layer reference is now stale, get new reference
+            layer = mapboxMap.getLayerAs("my-layer");
+        }
+        Timber.i("raster-brightness-min");
+        assertNotNull(layer);
 
-    if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
-      Timber.i("Adding layer");
-      layer = new RasterLayer("my-layer", "composite");
-      layer.setSourceLayer("composite");
-      mapboxMap.addLayer(layer);
-      //Layer reference is now stale, get new reference
-      layer = mapboxMap.getLayerAs("my-layer");
+        //Set and Get
+        layer.setProperties(rasterBrightnessMin(0.3f));
+        assertEquals((Float) layer.getRasterBrightnessMin().getValue(), (Float) 0.3f);
     }
-    Timber.i("raster-brightness-max");
-    assertNotNull(layer);
 
-    //Set and Get
-    layer.setProperties(rasterBrightnessMax(0.3f));
-    assertEquals((Float) layer.getRasterBrightnessMax().getValue(), (Float) 0.3f);
-  }
+    @Test
+    public void testRasterBrightnessMax() {
+        checkViewIsDisplayed(R.id.mapView);
 
-  @Test
-  public void testRasterSaturation() {
-    checkViewIsDisplayed(R.id.mapView);
+        mapboxMap = rule.getActivity().getMapboxMap();
 
-    mapboxMap = rule.getActivity().getMapboxMap();
+        if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
+            Timber.i("Adding layer");
+            layer = new RasterLayer("my-layer", "composite");
+            layer.setSourceLayer("composite");
+            mapboxMap.addLayer(layer);
+            //Layer reference is now stale, get new reference
+            layer = mapboxMap.getLayerAs("my-layer");
+        }
+        Timber.i("raster-brightness-max");
+        assertNotNull(layer);
 
-    if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
-      Timber.i("Adding layer");
-      layer = new RasterLayer("my-layer", "composite");
-      layer.setSourceLayer("composite");
-      mapboxMap.addLayer(layer);
-      //Layer reference is now stale, get new reference
-      layer = mapboxMap.getLayerAs("my-layer");
+        //Set and Get
+        layer.setProperties(rasterBrightnessMax(0.3f));
+        assertEquals((Float) layer.getRasterBrightnessMax().getValue(), (Float) 0.3f);
     }
-    Timber.i("raster-saturation");
-    assertNotNull(layer);
 
-    //Set and Get
-    layer.setProperties(rasterSaturation(0.3f));
-    assertEquals((Float) layer.getRasterSaturation().getValue(), (Float) 0.3f);
-  }
+    @Test
+    public void testRasterSaturation() {
+        checkViewIsDisplayed(R.id.mapView);
 
-  @Test
-  public void testRasterContrast() {
-    checkViewIsDisplayed(R.id.mapView);
+        mapboxMap = rule.getActivity().getMapboxMap();
 
-    mapboxMap = rule.getActivity().getMapboxMap();
+        if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
+            Timber.i("Adding layer");
+            layer = new RasterLayer("my-layer", "composite");
+            layer.setSourceLayer("composite");
+            mapboxMap.addLayer(layer);
+            //Layer reference is now stale, get new reference
+            layer = mapboxMap.getLayerAs("my-layer");
+        }
+        Timber.i("raster-saturation");
+        assertNotNull(layer);
 
-    if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
-      Timber.i("Adding layer");
-      layer = new RasterLayer("my-layer", "composite");
-      layer.setSourceLayer("composite");
-      mapboxMap.addLayer(layer);
-      //Layer reference is now stale, get new reference
-      layer = mapboxMap.getLayerAs("my-layer");
+        //Set and Get
+        layer.setProperties(rasterSaturation(0.3f));
+        assertEquals((Float) layer.getRasterSaturation().getValue(), (Float) 0.3f);
     }
-    Timber.i("raster-contrast");
-    assertNotNull(layer);
 
-    //Set and Get
-    layer.setProperties(rasterContrast(0.3f));
-    assertEquals((Float) layer.getRasterContrast().getValue(), (Float) 0.3f);
-  }
+    @Test
+    public void testRasterContrast() {
+        checkViewIsDisplayed(R.id.mapView);
 
-  @Test
-  public void testRasterFadeDuration() {
-    checkViewIsDisplayed(R.id.mapView);
+        mapboxMap = rule.getActivity().getMapboxMap();
 
-    mapboxMap = rule.getActivity().getMapboxMap();
+        if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
+            Timber.i("Adding layer");
+            layer = new RasterLayer("my-layer", "composite");
+            layer.setSourceLayer("composite");
+            mapboxMap.addLayer(layer);
+            //Layer reference is now stale, get new reference
+            layer = mapboxMap.getLayerAs("my-layer");
+        }
+        Timber.i("raster-contrast");
+        assertNotNull(layer);
 
-    if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
-      Timber.i("Adding layer");
-      layer = new RasterLayer("my-layer", "composite");
-      layer.setSourceLayer("composite");
-      mapboxMap.addLayer(layer);
-      //Layer reference is now stale, get new reference
-      layer = mapboxMap.getLayerAs("my-layer");
+        //Set and Get
+        layer.setProperties(rasterContrast(0.3f));
+        assertEquals((Float) layer.getRasterContrast().getValue(), (Float) 0.3f);
     }
-    Timber.i("raster-fade-duration");
-    assertNotNull(layer);
 
-    //Set and Get
-    layer.setProperties(rasterFadeDuration(0.3f));
-    assertEquals((Float) layer.getRasterFadeDuration().getValue(), (Float) 0.3f);
-  }
+    @Test
+    public void testRasterFadeDuration() {
+        checkViewIsDisplayed(R.id.mapView);
+
+        mapboxMap = rule.getActivity().getMapboxMap();
+
+        if ((layer = mapboxMap.getLayerAs("my-layer")) == null) {
+            Timber.i("Adding layer");
+            layer = new RasterLayer("my-layer", "composite");
+            layer.setSourceLayer("composite");
+            mapboxMap.addLayer(layer);
+            //Layer reference is now stale, get new reference
+            layer = mapboxMap.getLayerAs("my-layer");
+        }
+        Timber.i("raster-fade-duration");
+        assertNotNull(layer);
+
+        //Set and Get
+        layer.setProperties(rasterFadeDuration(0.3f));
+        assertEquals((Float) layer.getRasterFadeDuration().getValue(), (Float) 0.3f);
+    }
 
 
-  @After
-  public void unregisterIntentServiceIdlingResource() {
-    Espresso.unregisterIdlingResources(idlingResource);
-  }
+   @After
+   public void unregisterIntentServiceIdlingResource() {
+       Espresso.unregisterIdlingResources(idlingResource);
+   }
 }

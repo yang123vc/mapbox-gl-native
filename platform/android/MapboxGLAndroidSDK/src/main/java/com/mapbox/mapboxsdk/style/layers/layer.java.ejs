@@ -75,46 +75,15 @@ public class <%- camelize(type) %>Layer extends Layer {
     }
 <% } -%>
 <% if (type !== 'background' && type !== 'raster') { -%>
+
     /**
-     * Set a single filter.
+     * Set a filter.
      *
      * @param filter the filter to set
      */
     public void setFilter(Filter.Statement filter) {
-        this.setFilter(filter.toArray());
+        nativeSetFilter(filter.toArray());
     }
-
-    /**
-     * Set an array of filters.
-     *
-     * @param filter the filter array to set
-     */
-    public void setFilter(Object[] filter) {
-        nativeSetFilter(filter);
-    }
-
-    /**
-     * Set an array of filters.
-     *
-     * @param filter tthe filter array to set
-     * @return This
-     */
-    public <%- camelize(type) %>Layer withFilter(Object[] filter) {
-        setFilter(filter);
-        return this;
-    }
-
-    /**
-     * Set a single filter.
-     *
-     * @param filter the filter to set
-     * @return This
-     */
-    public <%- camelize(type) %>Layer withFilter(Filter.Statement filter) {
-        setFilter(filter);
-        return this;
-    }
-
 <% } -%>
 
     /**
@@ -141,6 +110,7 @@ public class <%- camelize(type) %>Layer extends Layer {
         return (PropertyValue<<%- propertyType(property) %>>) new PropertyValue(nativeGet<%- camelize(property.name) %>());
     }
  <% if (property.type == 'color') { -%>
+
     /**
      * <%- property.doc %>
      *
@@ -156,7 +126,6 @@ public class <%- camelize(type) %>Layer extends Layer {
             throw new RuntimeException("<%- property.name %> was set as a Function");
         }
     }
-
  <% } -%>
 
 <% } -%>
