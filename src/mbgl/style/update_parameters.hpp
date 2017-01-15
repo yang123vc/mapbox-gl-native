@@ -22,7 +22,9 @@ public:
                           FileSource& fileSource_,
                           const MapMode mode_,
                           AnnotationManager& annotationManager_,
-                          Style& style_)
+                          Style& style_,
+                          int32_t fixedPrefetchZoom_,
+                          int32_t dynamicPrefetchZoomDelta_)
         : pixelRatio(pixelRatio_),
           debugOptions(debugOptions_),
           transformState(transformState_),
@@ -30,7 +32,9 @@ public:
           fileSource(fileSource_),
           mode(mode_),
           annotationManager(annotationManager_),
-          style(style_) {}
+          style(style_),
+          fixedPrefetchZoom(fixedPrefetchZoom_),
+          dynamicPrefetchZoomDelta(dynamicPrefetchZoomDelta_) {}
 
     float pixelRatio;
     MapDebugOptions debugOptions;
@@ -42,6 +46,9 @@ public:
 
     // TODO: remove
     Style& style;
+
+    const int32_t fixedPrefetchZoom;
+    const int32_t dynamicPrefetchZoomDelta;
 };
 
 } // namespace style

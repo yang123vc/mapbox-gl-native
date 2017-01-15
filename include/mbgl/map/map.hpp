@@ -185,6 +185,22 @@ public:
     std::vector<Feature> queryRenderedFeatures(const ScreenBox&,        const optional<std::vector<std::string>>& layerIDs = {});
     AnnotationIDs queryPointAnnotations(const ScreenBox&);
 
+    // Tile prefetching
+    //
+    // When loading a map area, if `FixedPrefetch` is set to any positive number, the map will
+    // request first the tile for the prefetch `zoom` level if the `zoom` level is within the
+    // tile source range and if it is lower than the current zoom level, in a attempt to display
+    // a map as quick as possible. `DynamicPrefetch` works similarly, but will prefetch a tile
+    // at `zoom = (getZoom() - delta)`, constrained at the lowest zoom level for the source.
+    //
+    // If both are set, only a tile for the fixed zoom is requested. Setting a negative value
+    // can be used to disable tile prefetching.
+    void setFixedPrefetchZoom(int32_t zoom);
+    int32_t getFixedPrefetchZoom() const;
+
+    void setDynamicPrefetchZoomDelta(int32_t delta);
+    int32_t getDynamicPrefetchZoomDelta() const;
+
     // Memory
     void setSourceTileCacheSize(size_t);
     void onLowMemory();

@@ -91,8 +91,11 @@ void Source::Impl::updateTiles(const UpdateParameters& parameters) {
     // Determine the overzooming/underzooming amounts and required tiles.
     int32_t overscaledZoom = util::coveringZoomLevel(parameters.transformState.getZoom(), type, tileSize);
     int32_t tileZoom = overscaledZoom;
+    int32_t panZoom = zoomRange.max;
 
     std::vector<UnwrappedTileID> idealTiles;
+    std::vector<UnwrappedTileID> panTiles;
+
     if (overscaledZoom >= zoomRange.min) {
         int32_t idealZoom = std::min<int32_t>(zoomRange.max, overscaledZoom);
 
@@ -102,6 +105,18 @@ void Source::Impl::updateTiles(const UpdateParameters& parameters) {
         }
 
         idealTiles = util::tileCover(parameters.transformState, idealZoom);
+
+        // Request lower zoom level tiles (if configure to do so) in an attempt
+        // to show something on the screen faster at the cost of a little of bandwidth.
+        if (parameters.fixedPrefetchZoom >= 0) {
+            panZoom = std::max<int32_t>(std::min(parameters.fixedPrefetchZoom, tileZoom), zoomRange.min);
+        } else if (parameters.dynamicPrefetchZoomDelta >= 0) {
+            panZoom = std::max<int32_t>(tileZoom - parameters.dynamicPrefetchZoomDelta, zoomRange.min);
+        }
+
+        if (panZoom < tileZoom) {
+            panTiles = util::tileCover(parameters.transformState, panZoom);
+        }
     }
 
     // Stores a list of all the tiles that we're definitely going to retain. There are two
@@ -111,8 +126,9 @@ void Source::Impl::updateTiles(const UpdateParameters& parameters) {
     std::set<OverscaledTileID> retain;
 
     auto retainTileFn = [&retain](Tile& tile, Resource::Necessity necessity) -> void {
-        retain.emplace(tile.id);
-        tile.setNecessity(necessity);
+        if (retain.emplace(tile.id).second) {
+            tile.setNecessity(necessity);
+        }
     };
     auto getTileFn = [this](const OverscaledTileID& tileID) -> Tile* {
         auto it = tiles.find(tileID);
@@ -136,8 +152,14 @@ void Source::Impl::updateTiles(const UpdateParameters& parameters) {
     };
 
     renderTiles.clear();
-    algorithm::updateRenderables(getTileFn, createTileFn, retainTileFn, renderTileFn,
-                                 idealTiles, zoomRange, tileZoom);
+
+    if (!panTiles.empty()) {
+        algorithm::updateRenderables(getTileFn, createTileFn, retainTileFn,
+                [](const UnwrappedTileID&, Tile&) {}, panTiles, zoomRange, panZoom);
+    }
+
+    algorithm::updateRenderables(getTileFn, createTileFn, retainTileFn,
+            renderTileFn, idealTiles, zoomRange, tileZoom);
 
     if (type != SourceType::Annotations) {
         size_t conservativeCacheSize =
