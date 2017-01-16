@@ -34,6 +34,8 @@ public:
     ThreadPool threadPool { 1 };
     AnnotationManager annotationManager { 1.0 };
     style::Style style { fileSource, 1.0 };
+    int32_t fixedPrefetchZoom = -1;
+    int32_t dynamicPrefetchZoomDelta = -1;
 
     style::UpdateParameters updateParameters {
         1.0,
@@ -43,7 +45,9 @@ public:
         fileSource,
         MapMode::Continuous,
         annotationManager,
-        style
+        style,
+        fixedPrefetchZoom,
+        dynamicPrefetchZoomDelta
     };
 
     SourceTest() {
