@@ -31,6 +31,7 @@ set(MBGL_TEST_FILES
 
     # map
     test/map/map.test.cpp
+    test/map/prefetch.test.cpp
     test/map/transform.test.cpp
 
     # math
