@@ -460,7 +460,6 @@ SOURCES += \
     platform/default/mbgl/util/default_thread_pool.cpp \
     platform/default/online_file_source.cpp \
     platform/qt/src/async_task.cpp \
-    platform/qt/src/bidi.cpp \
     platform/qt/src/http_file_source.cpp \
     platform/qt/src/http_request.cpp \
     platform/qt/src/image.cpp \
@@ -574,4 +573,12 @@ qtConfig(system-zlib) {
     QMAKE_USE_PRIVATE += zlib
 } else {
     QT_PRIVATE += zlib-private
+}
+
+qtConfig(icu) {
+    SOURCES += \
+        platform/default/src/bidi.cpp
+} else {
+    SOURCES += \
+        platform/qt/src/bidi.cpp
 }
