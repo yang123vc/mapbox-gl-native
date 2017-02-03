@@ -64,6 +64,19 @@ struct a_color : gl::Attribute<gl::Normalized<uint8_t>, 4> {
     }
 };
 
+struct a_halo_color : gl::Attribute<gl::Normalized<uint8_t>, 4> {
+    static auto name() { return "a_halo_color"; }
+    
+    static Value value(const Color& color) {
+        return {{
+            gl::Normalized<uint8_t>(color.r),
+            gl::Normalized<uint8_t>(color.g),
+            gl::Normalized<uint8_t>(color.b),
+            gl::Normalized<uint8_t>(color.a)
+        }};
+    }
+};
+
 struct a_stroke_color : gl::Attribute<gl::Normalized<uint8_t>, 4> {
     static auto name() { return "a_stroke_color"; }
 
