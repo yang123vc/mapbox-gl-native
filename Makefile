@@ -457,7 +457,7 @@ run-qt-test: run-qt-test-*
 
 .PHONY: qt-docs
 qt-docs:
-	qdoc $(shell pwd)/platform/qt/config.qdocconf --outputdir $(shell pwd)/$(QT_OUTPUT_PATH)/docs
+	qdoc $(shell pwd)/platform/qt/config.qdocconf -outputdir $(shell pwd)/$(QT_OUTPUT_PATH)/docs
 
 #### Node targets ##############################################################
 

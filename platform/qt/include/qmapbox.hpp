@@ -11,17 +11,11 @@
 
 namespace QMapbox {
 
-// Reflects mbgl::Point<double>.
 typedef QPair<double, double> Coordinate;
 typedef QPair<Coordinate, double> CoordinateZoom;
-
-// Reflects mbgl::{LineString,LinearRing,MultiPoint}<double>.
 typedef QList<Coordinate> Coordinates;
-
-// Reflects mbgl::{MultiLineString,Polygon}<double>.
 typedef QList<Coordinates> CoordinatesCollection;
 
-// Reflects mbgl::MultiPolygon<double>.
 typedef QList<CoordinatesCollection> CoordinatesCollections;
 
 // Reflects mbgl::Feature.
@@ -77,9 +71,7 @@ struct Q_DECL_EXPORT StyleSourcedAnnotation {
     QString layerID;
 };
 
-// SymbolAnnotation, LineAnnotation, FillAnnotation, StyleSourcedAnnotation.
 typedef QVariant Annotation;
-
 typedef quint32 AnnotationID;
 typedef QList<AnnotationID> AnnotationIDs;
 
