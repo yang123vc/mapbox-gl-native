@@ -116,7 +116,9 @@ if [[ ${BUILD_FOR_DEVICE} == true ]]; then
         libtool -static -no_warning_for_no_symbols \
             -o ${OUTPUT}/static/${NAME}.framework/${NAME} \
             ${LIBS[@]/#/${PRODUCTS}/${BUILDTYPE}-iphoneos/lib} \
-            ${LIBS[@]/#/${PRODUCTS}/${BUILDTYPE}-iphonesimulator/lib}
+            ${LIBS[@]/#/${PRODUCTS}/${BUILDTYPE}-iphonesimulator/lib} \
+            `cmake -LA -N ${DERIVED_DATA} | grep MASON_PACKAGE_icu_LIBRARIES | cut -d= -f2`
+
         cp -rv ${PRODUCTS}/${BUILDTYPE}-iphoneos/${NAME}.bundle ${STATIC_BUNDLE_DIR}
     fi
 
@@ -154,7 +156,9 @@ else
         mkdir -p ${OUTPUT}/static/${NAME}.framework
         libtool -static -no_warning_for_no_symbols \
             -o ${OUTPUT}/static/${NAME}.framework/${NAME} \
-            ${LIBS[@]/#/${PRODUCTS}/${BUILDTYPE}-iphonesimulator/lib}
+            ${LIBS[@]/#/${PRODUCTS}/${BUILDTYPE}-iphonesimulator/lib} \
+            `cmake -LA -N ${DERIVED_DATA} | grep MASON_PACKAGE_icu_LIBRARIES | cut -d= -f2`
+
         cp -rv ${PRODUCTS}/${BUILDTYPE}-iphonesimulator/${NAME}.bundle ${STATIC_BUNDLE_DIR}
     fi
 
