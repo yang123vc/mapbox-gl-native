@@ -9,31 +9,31 @@ namespace mbgl {
 namespace style {
 namespace conversion {
 
-inline bool isUndefined(const NSObject*& value) {
+inline bool isUndefined(const NSObject* value) {
     return !value || value == [NSNull null];
 }
 
-inline bool isArray(const NSObject*& value) {
+inline bool isArray(const NSObject* value) {
     return [value isKindOfClass:[NSArray class]];
 }
 
-inline bool isObject(const NSObject*& value) {
+inline bool isObject(const NSObject* value) {
     return [value isKindOfClass:[NSDictionary class]];
 }
 
-inline std::size_t arrayLength(const NSObject*& value) {
+inline std::size_t arrayLength(const NSObject* value) {
     NSCAssert([value isKindOfClass:[NSArray class]], @"Value must be an NSArray for getLength().");
     NSArray * array = (NSArray *)value;
     return [array count];
 }
 
-inline NSObject* arrayMember(const NSObject*& value, std::size_t i) {
+inline NSObject* arrayMember(const NSObject* value, std::size_t i) {
     NSCAssert([value isKindOfClass:[NSArray class]], @"Value must be an NSArray for get(int).");
     NSArray * array = (NSArray *)value;
     return array[i];
 }
 
-inline optional<NSObject *> objectMember(const NSObject*& value, const char* key) {
+inline optional<NSObject *> objectMember(const NSObject* value, const char* key) {
     NSCAssert([value isKindOfClass:[NSDictionary class]], @"Value must be an NSDictionary for get(string).");
     auto dict = (NSDictionary *)value;
     NSObject *member = dict[@(key)];
@@ -46,12 +46,12 @@ inline optional<NSObject *> objectMember(const NSObject*& value, const char* key
 }
 
 template <class Fn>
-optional<Error> eachMember(const NSObject*&, Fn&&) {
+optional<Error> eachMember(const NSObject*, Fn&&) {
     mbgl::Log::Warning(mbgl::Event::General, "eachMember not implemented");
     return {};
 }
 
-inline bool _isBool(const NSObject*& value) {
+inline bool _isBool(const NSObject* value) {
     if (![value isKindOfClass:[NSNumber class]]) return false;
     // char: 32-bit boolean
     // BOOL: 64-bit boolean
@@ -60,15 +60,15 @@ inline bool _isBool(const NSObject*& value) {
             (strcmp([number objCType], @encode(BOOL)) == 0));
 }
     
-inline bool _isNumber(const NSObject*& value) {
+inline bool _isNumber(const NSObject* value) {
     return [value isKindOfClass:[NSNumber class]] && !_isBool(value);
 }
     
-inline bool _isString(const NSObject*& value) {
+inline bool _isString(const NSObject* value) {
     return [value isKindOfClass:[NSString class]];
 }
 
-inline optional<bool> toBool(const NSObject*& value) {
+inline optional<bool> toBool(const NSObject* value) {
     if (_isBool(value)) {
         return ((NSNumber *)value).boolValue;
     } else {
@@ -76,7 +76,7 @@ inline optional<bool> toBool(const NSObject*& value) {
     }
 }
 
-inline optional<float> toNumber(const NSObject*& value) {
+inline optional<float> toNumber(const NSObject* value) {
     if (_isNumber(value)) {
         return ((NSNumber *)value).floatValue;
     } else {
@@ -84,7 +84,7 @@ inline optional<float> toNumber(const NSObject*& value) {
     }
 }
 
-inline optional<std::string> toString(const NSObject*& value) {
+inline optional<std::string> toString(const NSObject* value) {
     if (_isString(value)) {
         return std::string([((NSString *)value) UTF8String]);
     } else {
@@ -92,7 +92,7 @@ inline optional<std::string> toString(const NSObject*& value) {
     }
 }
 
-inline optional<mbgl::Value> toValue(const NSObject*& value) {
+inline optional<mbgl::Value> toValue(const NSObject* value) {
     if (isUndefined(value)) {
         return {};
     } else if (_isBool(value)) {
