@@ -162,6 +162,7 @@
 		40EDA1C01CFE0E0200D9EA68 /* MGLAnnotationContainerView.h in Headers */ = {isa = PBXBuildFile; fileRef = 40EDA1BD1CFE0D4A00D9EA68 /* MGLAnnotationContainerView.h */; };
 		40EDA1C11CFE0E0500D9EA68 /* MGLAnnotationContainerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 40EDA1BE1CFE0D4A00D9EA68 /* MGLAnnotationContainerView.m */; };
 		40EDA1C21CFE0E0500D9EA68 /* MGLAnnotationContainerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 40EDA1BE1CFE0D4A00D9EA68 /* MGLAnnotationContainerView.m */; };
+		40F066C51E52E89D002B1DB5 /* libicuuc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 40F066C41E52E89D002B1DB5 /* libicuuc.a */; };
 		40F887701D7A1E58008ECB67 /* MGLShapeSource_Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 40F8876F1D7A1DB8008ECB67 /* MGLShapeSource_Private.h */; };
 		40F887711D7A1E59008ECB67 /* MGLShapeSource_Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 40F8876F1D7A1DB8008ECB67 /* MGLShapeSource_Private.h */; };
 		40FDA76B1CCAAA6800442548 /* MBXAnnotationView.m in Sources */ = {isa = PBXBuildFile; fileRef = 40FDA76A1CCAAA6800442548 /* MBXAnnotationView.m */; };
@@ -616,6 +617,7 @@
 		40CFA6501D787579008103BD /* MGLShapeSourceTests.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = MGLShapeSourceTests.mm; path = ../../darwin/test/MGLShapeSourceTests.mm; sourceTree = "<group>"; };
 		40EDA1BD1CFE0D4A00D9EA68 /* MGLAnnotationContainerView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MGLAnnotationContainerView.h; sourceTree = "<group>"; };
 		40EDA1BE1CFE0D4A00D9EA68 /* MGLAnnotationContainerView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MGLAnnotationContainerView.m; sourceTree = "<group>"; };
+		40F066C41E52E89D002B1DB5 /* libicuuc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libicuuc.a; path = "../../mason_packages/ios-8.0/icu/58.1/lib/libicuuc.a"; sourceTree = "<group>"; };
 		40F8876F1D7A1DB8008ECB67 /* MGLShapeSource_Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MGLShapeSource_Private.h; sourceTree = "<group>"; };
 		40FDA7691CCAAA6800442548 /* MBXAnnotationView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBXAnnotationView.h; sourceTree = "<group>"; };
 		40FDA76A1CCAAA6800442548 /* MBXAnnotationView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBXAnnotationView.m; sourceTree = "<group>"; };
@@ -879,6 +881,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				40F066C51E52E89D002B1DB5 /* libicuuc.a in Frameworks */,
 				36F1153D1D46080700878E1A /* libmbgl-core.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1096,6 +1099,7 @@
 		DA1DC9921CB6DF24006E619F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				40F066C41E52E89D002B1DB5 /* libicuuc.a */,
 				36F1153B1D46080700878E1A /* libmbgl-core.a */,
 				36F1153C1D46080700878E1A /* libmbgl-platform-ios.a */,
 				554180411D2E97DE00012372 /* OpenGLES.framework */,
@@ -2595,6 +2599,7 @@
 			buildSettings = {
 				BITCODE_GENERATION_MODE = bitcode;
 				HEADER_SEARCH_PATHS = "$(mbgl_core_INCLUDE_DIRECTORIES)";
+				LIBRARY_SEARCH_PATHS = "../../mason_packages/ios-8.0/icu/58.1/lib";
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"$(sqlite_cflags)",
@@ -2621,6 +2626,7 @@
 			buildSettings = {
 				BITCODE_GENERATION_MODE = bitcode;
 				HEADER_SEARCH_PATHS = "$(mbgl_core_INCLUDE_DIRECTORIES)";
+				LIBRARY_SEARCH_PATHS = "../../mason_packages/ios-8.0/icu/58.1/lib";
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"$(sqlite_cflags)",
